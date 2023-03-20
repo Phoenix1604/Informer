@@ -16,8 +16,7 @@ function sb_send_daily_postsummary_callback()
         $message .= 'URL: ' . $post_data['url'] . "\n";
         $message .= 'Meta Title: ' . $post_data['meta_title'] . "\n";
         $message .= 'Meta Description: ' . $post_data['meta_description'] . "\n";
-        // $message .= 'Meta Keywords: ' . $post_data['meta_keywords'] . "\n";
-        // $message .= 'Page Speed Score: ' . $post_data['page_speed'] . " seconds \n";
+        $message .= 'Page Speed Score: ' . $post_data['page_speed'] . " seconds \n";
         $message .= "\n";
     }
     $headers = array(
