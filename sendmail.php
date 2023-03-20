@@ -1,25 +1,29 @@
 <?php
 
-//One Minute Interval For Testing
-function sb_cron_intervals($schedules)
+if (is_admin()) {
+    include plugin_dir_path(__FILE__) . 'getmaildetails.php';
+}
+
+function sb_send_daily_postsummary_callback()
 {
-    // one minute
-    $one_minute = array(
-        'interval' => 60,
-        'display' => 'One Minute',
+    $to = get_option('admin_email');
+    $subject = 'Daily Post Summary';
+    $summary = sb_get_daily_post_summary();
+    $message = '';
+
+    foreach ($summary as $post_data) {
+        $message .= 'Title: ' . $post_data['title'] . "\n";
+        $message .= 'URL: ' . $post_data['url'] . "\n";
+        $message .= 'Meta Title: ' . $post_data['meta_title'] . "\n";
+        $message .= 'Meta Description: ' . $post_data['meta_description'] . "\n";
+        // $message .= 'Meta Keywords: ' . $post_data['meta_keywords'] . "\n";
+        // $message .= 'Page Speed Score: ' . $post_data['page_speed'] . " seconds \n";
+        $message .= "\n";
+    }
+    $headers = array(
+        'From: subhajit.bera@wisdmlabs.com',
     );
 
-    $schedules['one_minute'] = $one_minute;
-    // return data
-    return $schedules;
-}
-add_filter('cron_schedules', 'sb_cron_intervals');
+    wp_mail($to, $subject, $message, $headers);
 
-//Schedule Event
-add_action('wp', 'sb_schedule_daily_post_summary');
-function sb_schedule_daily_post_summary()
-{
-    if (!wp_next_scheduled('sb_send_daily_post_summary')) {
-        wp_schedule_event(time(), 'one_minute', 'sb_send_daily_post_summary');
-    }
 }
