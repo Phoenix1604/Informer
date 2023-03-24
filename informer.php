@@ -1,50 +1,82 @@
 <?php
-/*
- * Plugin Name: Informer
- * Plugin URI: https://subhajit.wisdmlabs.net
- * Author: Subhajit Bera
- * Author URI: https://subhajit.wisdmlabs.net
- * Description: Posts summary on Admin Mail at End of the Day
- * Text Domain: informer
+
+/**
+ * The plugin bootstrap file
+ *
+ * This file is read by WordPress to generate the plugin information in the plugin
+ * admin area. This file also includes all of the dependencies used by the plugin,
+ * registers the activation and deactivation functions, and defines a function
+ * that starts the plugin.
+ *
+ * @link              https://wisdmlabs.com
+ * @since             1.0.0
+ * @package           Informer
+ *
+ * @wordpress-plugin
+ * Plugin Name:       Informer
+ * Plugin URI:        https://wisdmlabs.com
+ * Description:       Posts summary on Admin Mail at End of the Day
+ * Version:           1.0.0
+ * Author:            Subhajit Bera
+ * Author URI:        https://wisdmlabs.com
+ * License:           GPL-2.0+
+ * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * Text Domain:       informer
+ * Domain Path:       /languages
  */
 
-if (!defined('ABSPATH')) {
-    die('Invalid request.');
+// If this file is called directly, abort.
+if ( ! defined( 'WPINC' ) ) {
+	die;
 }
 
-if (is_admin()) {
-    include plugin_dir_path(__FILE__) . 'sendmail.php';
+/**
+ * Currently plugin version.
+ * Start at version 1.0.0 and use SemVer - https://semver.org
+ * Rename this for your plugin and update it as you release new versions.
+ */
+define( 'INFORMER_VERSION', '1.0.0' );
+
+/**
+ * The code that runs during plugin activation.
+ * This action is documented in includes/class-informer-activator.php
+ */
+function activate_informer() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-informer-activator.php';
+	Informer_Activator::activate();
 }
 
-//One Minute Interval For Testing
-function sb_cron_intervals($schedules)
-{
-    // one minute
-    $one_minute = array(
-        'interval' => 60,
-        'display' => 'One Minute',
-    );
-
-    $schedules['one_minute'] = $one_minute;
-    // return data
-    return $schedules;
+/**
+ * The code that runs during plugin deactivation.
+ * This action is documented in includes/class-informer-deactivator.php
+ */
+function deactivate_informer() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-informer-deactivator.php';
+	Informer_Deactivator::deactivate();
 }
-add_filter('cron_schedules', 'sb_cron_intervals');
 
-//Schedule Event
-register_activation_hook(__FILE__, 'sb_schedule_dailypost_summary');
-function sb_schedule_dailypost_summary()
-{
-    if (!wp_next_scheduled('sb_send_dailypost_summary')) {
-        wp_schedule_event(time(), 'hourly', 'sb_send_dailypost_summary');
-    }
+register_activation_hook( __FILE__, 'activate_informer' );
+register_deactivation_hook( __FILE__, 'deactivate_informer' );
+
+/**
+ * The core plugin class that is used to define internationalization,
+ * admin-specific hooks, and public-facing site hooks.
+ */
+require plugin_dir_path( __FILE__ ) . 'includes/class-informer.php';
+
+/**
+ * Begins execution of the plugin.
+ *
+ * Since everything within the plugin is registered via hooks,
+ * then kicking off the plugin from this point in the file does
+ * not affect the page life cycle.
+ *
+ * @since    1.0.0
+ */
+function run_informer() {
+
+	$plugin = new Informer();
+	$plugin->run();
+
 }
-add_action('sb_send_dailypost_summary', 'sb_send_daily_postsummary_callback');
-// remove cron event
-function wpcron_deactivation()
-{
-
-    wp_clear_scheduled_hook('sb_send_dailypost_summary');
-
-}
-register_deactivation_hook(__FILE__, 'wpcron_deactivation');
+run_informer();
